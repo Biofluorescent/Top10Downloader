@@ -55,31 +55,48 @@ class MainActivity : AppCompatActivity() {
                     val response = connection.responseCode
                     Log.d(TAG, "downloadXML: The response code was $response")
 
-//            val inputStream = connection.inputStream
-//            val inputStreamReader = InputStreamReader(inputStream)
-//            val reader = BufferedReader(inputStreamReader)
-                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+//                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+//
+//                    val inputBuffer = CharArray(500)
+//                    var charsRead = 0
+//                    while (charsRead >= 0) {
+//                        charsRead = reader.read(inputBuffer)
+//                        if (charsRead > 0) {
+//                            xmlResult.append(String(inputBuffer, 0, charsRead))
+//                        }
+//                    }
+//                    reader.close()
 
-                    val inputBuffer = CharArray(500)
-                    var charsRead = 0
-                    while (charsRead >= 0) {
-                        charsRead = reader.read(inputBuffer)
-                        if (charsRead > 0) {
-                            xmlResult.append(String(inputBuffer, 0, charsRead))
-                        }
+                    val stream = connection.inputStream
+                    stream.buffered().reader().use { reader ->
+                        xmlResult.append(reader.readText())
                     }
-                    reader.close()
+
                     Log.d(TAG, "Received ${xmlResult.length} bytes")
                     return xmlResult.toString()
-                }catch (e: MalformedURLException) {
-                    Log.e(TAG, "downloadXML: Invalid URL ${e.message}")
-                }catch (e: IOException) {
-                    Log.e(TAG, "downloadXML: IO Exception ${e.message}")
-                }catch (e: SecurityException){
-                    Log.e(TAG, "downloadXML: Security Exception. Needs permisssions? ${e.message}")
-                }catch (e: Exception) {
-                    Log.e(TAG, "Unknown error: ${e.message}")
+
+//                }catch (e: MalformedURLException) {
+//                    Log.e(TAG, "downloadXML: Invalid URL ${e.message}")
+//                }catch (e: IOException) {
+//                    Log.e(TAG, "downloadXML: IO Exception ${e.message}")
+//                }catch (e: SecurityException){
+//                    Log.e(TAG, "downloadXML: Security Exception. Needs permisssions? ${e.message}")
+//                }catch (e: Exception) {
+//                    Log.e(TAG, "Unknown error: ${e.message}")
+//                }
+
+                } catch (e: Exception) {
+                    val errorMessage: String = when (e) {
+                        is MalformedURLException -> "downloadXML: Invalid URL ${e.message}"
+                        is IOException -> "downloadXML: IO Exception ${e.message}"
+                        is SecurityException -> {
+                            e.printStackTrace()
+                            "downloadXML: Security Exception. Needs permisssions? ${e.message}"
+                        }
+                        else -> "Unknown error: ${e.message}"
+                    }
                 }
+
                 return "" // There has been a problem. Return empty string.
             }
 
